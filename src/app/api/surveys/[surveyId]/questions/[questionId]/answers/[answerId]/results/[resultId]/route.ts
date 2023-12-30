@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
+import { z } from "zod";
+
+const uuidSchema = z.string().uuid();
 
 type ApiRequestContext = {
   params: {
@@ -10,20 +13,23 @@ type ApiRequestContext = {
   };
 };
 
-export async function GET(
-  request: NextRequest,
-  { params: { surveyId, questionId, answerId, resultsId } }: ApiRequestContext
-) {
+export async function GET(request: NextRequest, { params }: ApiRequestContext) {
   try {
+    // Validate the surveyId, questionId, answerId, and resultsId
+    const validSurveyId = uuidSchema.parse(params.surveyId);
+    const validQuestionId = uuidSchema.parse(params.questionId);
+    const validAnswerId = uuidSchema.parse(params.answerId);
+    const validResultsId = uuidSchema.parse(params.resultsId);
+
     // Fetch the specific result
     const result = await db.result.findFirst({
       where: {
-        id: resultsId,
+        id: validResultsId,
         questionAnswer: {
-          id: answerId,
-          questionId: questionId,
+          id: validAnswerId,
+          questionId: validQuestionId,
           question: {
-            surveyId: surveyId,
+            surveyId: validSurveyId,
           },
         },
       },
@@ -42,7 +48,18 @@ export async function GET(
 
     return NextResponse.json(result);
   } catch (e) {
-    console.error("An error occurred:", e);
+    if (e instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          message: "Invalid UUID format",
+          errors: e.errors,
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     return NextResponse.json(
       {
         message: "An internal server error occurred",
