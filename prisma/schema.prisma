@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_NON_POOLING") // uses a direct connection
+}
+
+enum SurveyStatus {
+  DRAFT
+  ONGOING
+  FINISHED
+}
+
+model Survey {
+  id           String       @id @default(uuid())
+  name         String
+  introduction String
+  manager      String
+  status       SurveyStatus
+  updatedAt    DateTime     @updatedAt
+  createdAt    DateTime     @default(now())
+
+  Question Question[]
+}
+
+model Question {
+  id       String  @id @default(uuid())
+  text     String
+  required Boolean
+  position Int
+  surveyId String
+  survey   Survey  @relation(fields: [surveyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  QuestionAnswer QuestionAnswer[]
+}
+
+model QuestionAnswer {
+  id         String   @id @default(uuid())
+  answer     String
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  Result Result[]
+}
+
+model Result {
+  id               String         @id @default(uuid())
+  questionAnswerId String
+  sentimentScore   String
+  keywords         String[]
+  summary          String
+  questionAnswer   QuestionAnswer @relation(fields: [questionAnswerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
