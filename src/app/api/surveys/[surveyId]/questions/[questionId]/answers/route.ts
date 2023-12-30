@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import db from "@/lib/db";
+import { z } from "zod";
+
+const uuidSchema = z.string().uuid();
+
+const answerCreateSchema = z.object({
+  answer: z.string(),
+});
 
 type ApiRequestContext = {
   params: {
@@ -11,14 +18,18 @@ type ApiRequestContext = {
 
 export async function POST(
   request: NextRequest,
-  { params: { surveyId, questionId } }: ApiRequestContext
+  { params }: ApiRequestContext
 ) {
   try {
+    // Validate the surveyId and questionId
+    const validSurveyId = uuidSchema.parse(params.surveyId);
+    const validQuestionId = uuidSchema.parse(params.questionId);
+
     // Verify that the specified question exists
     const questionExists = await db.question.findFirst({
       where: {
-        id: questionId,
-        surveyId: surveyId,
+        id: validQuestionId,
+        surveyId: validSurveyId,
       },
     });
 
@@ -33,12 +44,25 @@ export async function POST(
       );
     }
 
-    // Parse the request body to get the answer data
     const body = await request.json();
-    if (!body || !body.answer) {
+
+    // Validate the request body
+    const parsedBody = answerCreateSchema.parse(body);
+
+    const createdAnswer = await db.questionAnswer.create({
+      data: {
+        answer: parsedBody.answer,
+        questionId: validQuestionId,
+      },
+    });
+
+    return NextResponse.json(createdAnswer);
+  } catch (e) {
+    if (e instanceof z.ZodError) {
       return NextResponse.json(
         {
-          message: "Invalid answer data",
+          message: "Invalid request data",
+          errors: e.errors,
         },
         {
           status: 400,
@@ -46,17 +70,6 @@ export async function POST(
       );
     }
 
-    // Create a new answer for the question
-    const createdAnswer = await db.questionAnswer.create({
-      data: {
-        answer: body.answer,
-        questionId: questionId,
-      },
-    });
-
-    return NextResponse.json(createdAnswer);
-  } catch (e) {
-    console.error(e); // Log the error for debugging
     return NextResponse.json(
       {
         message: "Unknown error occurred",
@@ -68,16 +81,17 @@ export async function POST(
   }
 }
 
-export async function GET(
-  request: NextRequest,
-  { params: { surveyId, questionId } }: ApiRequestContext
-) {
+export async function GET(request: NextRequest, { params }: ApiRequestContext) {
   try {
+    // Validate the surveyId and questionId
+    const validSurveyId = uuidSchema.parse(params.surveyId);
+    const validQuestionId = uuidSchema.parse(params.questionId);
+
     // Fetch the specific question to ensure it exists
     const question = await db.question.findFirst({
       where: {
-        id: questionId,
-        surveyId: surveyId,
+        id: validQuestionId,
+        surveyId: validSurveyId,
       },
     });
 
@@ -95,26 +109,24 @@ export async function GET(
     // Fetch the answers for the specific question
     const answersForQuestion = await db.questionAnswer.findMany({
       where: {
-        questionId,
+        questionId: validQuestionId,
       },
     });
 
     return NextResponse.json(answersForQuestion);
   } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError) {
-      if (e.code === "P2025") {
-        return NextResponse.json(
-          {
-            message: "Question not found",
-          },
-          {
-            status: 404,
-          }
-        );
-      }
+    if (e instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          message: "Invalid UUID format",
+          errors: e.errors,
+        },
+        {
+          status: 400,
+        }
+      );
     }
 
-    console.error(e); // Log the error for debugging
     return NextResponse.json(
       {
         message: "Unknown error occurred",
