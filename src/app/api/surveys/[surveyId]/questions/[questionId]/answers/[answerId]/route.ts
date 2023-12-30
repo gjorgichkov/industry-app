@@ -1,8 +1,9 @@
-// src/app/api/surveys/[surveyId]/questions/[questionId]/answers/[answerId]/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import db from "@/lib/db";
+import { z } from "zod";
+
+const uuidSchema = z.string().uuid();
 
 type ApiRequestContext = {
   params: {
@@ -12,19 +13,20 @@ type ApiRequestContext = {
   };
 };
 
-export async function GET(
-  request: NextRequest,
-  { params: { surveyId, questionId, answerId } }: ApiRequestContext
-) {
+export async function GET(request: NextRequest, { params }: ApiRequestContext) {
   try {
+    // Validate the surveyId, questionId, and answerId
+    const validSurveyId = uuidSchema.parse(params.surveyId);
+    const validQuestionId = uuidSchema.parse(params.questionId);
+    const validAnswerId = uuidSchema.parse(params.answerId);
+
     // Fetch the specific answer
     const answer = await db.questionAnswer.findFirst({
       where: {
-        id: answerId,
-        questionId: questionId,
-        // This line ensures the answer belongs to a question in the specified survey
+        id: validAnswerId,
+        questionId: validQuestionId,
         question: {
-          surveyId: surveyId,
+          surveyId: validSurveyId,
         },
       },
     });
@@ -42,7 +44,18 @@ export async function GET(
 
     return NextResponse.json(answer);
   } catch (e) {
-    console.error(e); // Log the error for debugging
+    if (e instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          message: "Invalid UUID format",
+          errors: e.errors,
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     return NextResponse.json(
       {
         message: "Unknown error occurred",
