@@ -13,6 +13,8 @@ const questionCreateSchema = z.object({
   position: z.number(),
 });
 
+const questionsCreateSchema = z.array(questionCreateSchema);
+
 type ApiRequestContext = {
   params: {
     surveyId: string;
@@ -24,22 +26,22 @@ export async function POST(
   { params }: ApiRequestContext
 ) {
   try {
-    // Validate the surveyId parameter
     const { surveyId } = surveyIdSchema.parse(params);
 
     const body = await request.json();
 
-    // Validate the request body
-    const parsedBody = questionCreateSchema.parse(body);
+    // Validate the request body as an array of questions
+    const parsedQuestions = questionsCreateSchema.parse(body);
 
-    const createdQuestion = await db.question.create({
-      data: {
-        ...parsedBody,
+    // Batch create questions
+    const createdQuestions = await db.question.createMany({
+      data: parsedQuestions.map((question) => ({
+        ...question,
         surveyId,
-      },
+      })),
     });
 
-    return NextResponse.json(createdQuestion);
+    return NextResponse.json(createdQuestions);
   } catch (e) {
     if (e instanceof z.ZodError) {
       return NextResponse.json(
