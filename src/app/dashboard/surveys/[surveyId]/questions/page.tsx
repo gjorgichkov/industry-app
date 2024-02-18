@@ -148,7 +148,7 @@ const Questions = () => {
                               <div className="handle cursor-move">
                                 <p>
                                   <span className="pr-2">
-                                    <IoReorderThreeSharp className="inline-block text-2xl" />
+                                    <IoReorderThreeSharp className="inline-block text-xl" />
                                   </span>
                                   <span className="mr-1">
                                     {question.position + 1}.
