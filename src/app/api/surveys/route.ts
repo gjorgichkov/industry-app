@@ -43,12 +43,12 @@ export const POST = routeHandler(async (request, context) => {
     data,
   });
 
-  nodemailer.sendMail({
-    from: process.env.SMTP_MAIL_FROM,
-    to: survey.manager,
-    subject: "New Survey Created",
-    html: getSurveyEmailTemplateHtml(survey),
-  });
+  // nodemailer.sendMail({
+  //   from: process.env.SMTP_MAIL_FROM,
+  //   to: survey.manager,
+  //   subject: "New Survey Created",
+  //   html: getSurveyEmailTemplateHtml(survey),
+  // });
 
   return survey;
 });
