@@ -7,6 +7,7 @@ import LeftColumn from "@/components/LeftColumn/LeftColumn";
 import { QuestionsDTO } from "@/types/QuestionDTO";
 import { isNumber, noop } from "lodash";
 import { ReactSortable, SortableEvent } from "react-sortablejs";
+import { IoReorderThreeSharp } from "react-icons/io5";
 
 const Questions = () => {
   const [questions, setQuestions] = useState<QuestionsDTO["data"]>([]);
@@ -146,6 +147,9 @@ const Questions = () => {
                             <div className="flex justify-between items-center">
                               <div className="handle cursor-move">
                                 <p>
+                                  <span className="pr-2">
+                                    <IoReorderThreeSharp className="inline-block text-2xl" />
+                                  </span>
                                   <span className="mr-1">
                                     {question.position + 1}.
                                   </span>
