@@ -145,7 +145,7 @@ const Questions = () => {
                         <div key={question.id}>
                           <div className="question white-bg-80 p-2 rounded-md mb-2 handle">
                             <div className="flex justify-between items-center">
-                              <div className="handle cursor-move">
+                              <div className="handle cursor-move w-4/6">
                                 <p>
                                   <span className="pr-2">
                                     <IoReorderThreeSharp className="inline-block text-xl" />
@@ -156,7 +156,7 @@ const Questions = () => {
                                   {question.text}
                                 </p>
                               </div>
-                              <div>
+                              <div className="w-2/6">
                                 <span
                                   onClick={() =>
                                     handleDuplicateQuestion(
@@ -164,7 +164,7 @@ const Questions = () => {
                                       question.required
                                     )
                                   }
-                                  className="bg-white rounded-md uppercase mr-2 px-2 py-1 cursor-pointer"
+                                  className="bg-white rounded-md uppercase mr-2 px-2 py-1 cursor-pointer text-sm"
                                 >
                                   duplicate
                                 </span>
@@ -172,7 +172,7 @@ const Questions = () => {
                                   onClick={() =>
                                     handleEditQuestion(question.id)
                                   }
-                                  className="bg-white rounded-md uppercase mr-2 px-2 py-1 cursor-pointer"
+                                  className="bg-white rounded-md uppercase mr-2 px-2 py-1 cursor-pointer text-sm"
                                 >
                                   edit
                                 </span>
@@ -180,7 +180,7 @@ const Questions = () => {
                                   onClick={() =>
                                     handleDeleteQuestion(question.id)
                                   }
-                                  className="bg-white rounded-md uppercase px-2 py-1 cursor-pointer"
+                                  className="bg-white rounded-md uppercase px-2 py-1 cursor-pointer text-sm"
                                 >
                                   delete
                                 </span>

@@ -16,6 +16,7 @@
     "lodash": "^4.17.21",
     "lottie-react": "^2.4.0",
     "next": "14.0.4",
+    "nodemailer": "^6.9.8",
     "prisma": "^5.7.1",
     "react": "^18",
     "react-d3-speedometer": "^2.1.0-rc.0",
@@ -28,6 +29,7 @@
   "devDependencies": {
     "@types/lodash": "^4.14.202",
     "@types/node": "^20",
+    "@types/nodemailer": "^6.4.14",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/sortablejs": "^1.15.7",
